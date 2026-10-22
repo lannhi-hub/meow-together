@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meow Together ♡</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #fff4ec;
+  color: #684b42;
+  text-align: center;
+}
+header { padding: 22px 12px 8px; }
+h1 { margin: 0; color: #b87975; }
+p { line-height: 1.6; }
+main { max-width: 540px; margin: auto; padding: 12px; }
+.card {
+  background: #fffdf9;
+  border: 2px solid #f1d9ca;
+  border-radius: 22px;
+  padding: 18px;
+  margin: 14px 0;
+  box-shadow: 0 4px 12px #e7c9b755;
+}
+.room {
+  background: linear-gradient(#f9e4d7 0 68%, #dfb99d 68%);
+  min-height: 240px;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.cat {
+  font-size: 92px;
+  cursor: pointer;
+  animation: bounce 2s infinite ease-in-out;
+}
+@keyframes bounce {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+button, input {
+  border: 0;
+  border-radius: 13px;
+  padding: 12px;
+  margin: 4px;
+  font-size: 15px;
+}
+button {
+  background: #d99b91;
+  color: white;
+  cursor: pointer;
+}
+button:active { transform: scale(.97); }
+input {
+  border: 1px solid #e5c8b7;
+  width: 85%;
+  max-width: 280px;
+}
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat {
+  background: #fff1e6;
+  border-radius: 12px;
+  padding: 10px;
+}
+.small { font-size: 13px; color: #98796e; }
+#message { min-height: 44px; font-weight: bold; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🐾 Meow Together ♡</h1>
+  <p>Một bé mèo nhỏ, hai người cùng yêu.</p>
+</header>
+
+<main>
+  <section class="card" id="welcome">
+    <h2>Hộp quà dành cho anh 💌</h2>
+    <p>Hôm nay là ngày đặc biệt của chúng mình...</p>
+    <p>Em có một món quà nhỏ dành cho anh!</p>
+    <button onclick="openGift()">Mở hộp quà 🎁</button>
+  </section>
+
+  <section class="card" id="game" hidden>
+    <h2 id="catName">Mèo con</h2>
+    <div class="room">
+      <div id="cat" class="cat" onclick="petCat()">🐱</div>
+      <p id="stage">Bé mèo mới về nhà</p>
+    </div>
+    <p id="message">Meo meo! Chào hai sen nha!</p>
+
+    <div class="stats">
+      <div class="stat">💗 Hạnh phúc<br><b id="happy">70</b>/100</div>
+      <div class="stat">🍗 No bụng<br><b id="full">60</b>/100</div>
+      <div class="stat">⭐ Kinh nghiệm<br><b id="exp">0</b></div>
+      <div class="stat">🪙 Xu<br><b id="coins">10</b></div>
+    </div>
+
+    <div class="card">
+      <h3>🍽️ Cho mèo ăn</h3>
+      <button onclick="feed('fish')">🐟 Cá</button>
+      <button onclick="feed('milk')">🥛 Sữa</button>
+      <button onclick="feed('cake')">🍰 Bánh ngọt</button>
+    </div>
+
+    <div class="card">
+      <h3>💕 Chơi cùng bé</h3>
+      <button onclick="petCat()">Vuốt ve 🥰</button>
+      <button onclick="play()">Chơi đồ chơi 🧶</button>
+      <button onclick="sleepCat()">Ngủ ngon 💤</button>
+    </div>
+
+    <div class="card">
+      <h3>🏡 Ngôi nhà nhỏ</h3>
+      <button onclick="goOutside()">Ra sân 🌷</button>
+      <button onclick="bringInside()">Đón bé vào nhà 🏠</button>
+      <p id="outside">Bé đang ở trong nhà.</p>
+    </div>
+
+    <p class="small">
+      Phiên bản thử nghiệm: dữ liệu được lưu trên trình duyệt này.
+      Chưa có tài khoản hoặc đồng bộ online.
+    </p>
+  </section>
+</main>
+
+<script>
+let happy = 70;
+let full = 60;
+let exp = 0;
+let coins = 10;
+let outside = false;
+let lost = false;
+let catName = "Mèo con";
+
+function openGift() {
+  let letter =
+    "Helo anh đẹp trai, chưa gì đã anni 3 tháng của 2 đứa mình rồi. " +
+    "Những lời em muốn nói thì đều viết hết qua thư tay rồi, " +
+    "sẵn đây em mới mua về 1 bé mèo thúi, nhờ anh cùng em chăm sóc " +
+    "nó thành một con mèo siêu cấp béo nhâ, yêu anh.";
+
+  alert(letter);
+  catName = prompt("Đặt tên cho bé mèo của chúng mình nha 💗") || "Mèo con";
+  document.getElementById("catName").textContent = catName;
+  document.getElementById("welcome").hidden = true;
+  document.getElementById("game").hidden = false;
+  say("Meo meo! " + catName + " đã về nhà với hai sen!");
+}
+
+function say(message) {
+  document.getElementById("message").textContent = message;
+  update();
+}
+
+function update() {
+  document.getElementById("happy").textContent = happy;
+  document.getElementById("full").textContent = full;
+  document.getElementById("exp").textContent = exp;
+  document.getElementById("coins").textContent = coins;
+
+  let cat = document.getElementById("cat");
+  let stage = document.getElementById("stage");
+
+  if (exp >= 100) {
+    cat.textContent = "😺";
+    stage.textContent = "Mèo trưởng thành";
+  } else if (exp >= 40) {
+    cat.textContent = "🐈";
+    stage.textContent = "Mèo con lớn hơn";
+  } else {
+    cat.textContent = "🐱";
+    stage.textContent = "Bé mèo mới về nhà";
+  }
+}
+
+function feed(food) {
+  if (lost) {
+    say("Phải tìm và đón " + catName + " về nhà trước đã!");
+    return;
+  }
+  if (food === "fish") {
+    full = Math.min(100, full + 25);
+    happy = Math.min(100, happy + 12);
+    exp += 10;
+    coins += 2;
+    say("Meo meo! Cá ngon quá, cho tôi ăn thêm! 🐟");
+  } else if (food === "milk") {
+    full = Math.min(100, full + 10);
+    happy = Math.min(100, happy + 3);
+    exp += 4;
+    say("Măm măm! Cảm ơn sen nha 🥛");
+  } else {
+    happy = Math.max(0, happy - 8);
+    say("Dở như này thì tự ăn đi ông nội! 😾");
+  }
+  full = Math.min(100, full);
+  exp = Math.min(100, exp);
+}
+
+function petCat() {
+  if (lost) {
+    say("Bé đang ở ngoài sân, mau đón về nào!");
+    return;
+  }
+  happy = Math.min(100, happy + 8);
+  exp = Math.min(100, exp + 5);
+  coins += 1;
+  say("Purrrr... " + catName + " thích được vuốt ve lắm! 💗");
+}
+
+function play() {
+  if (lost) {
+    say("Hãy đón bé về trước khi chơi nhé!");
+    return;
+  }
+  happy = Math.min(100, happy + 12);
+  full = Math.max(0, full - 5);
+  exp = Math.min(100, exp + 8);
+  coins += 2;
+  say("Bắt được cuộn len rồi! Meo meo! 🧶");
+}
+
+function sleepCat() {
+  if (lost) {
+    say("Bé chưa về nhà nên chưa ngủ được!");
+    return;
+  }
+  full = Math.max(0, full - 3);
+  happy = Math.min(100, happy + 5);
+  say("Chúc " + catName + " ngủ ngon nhé! 💤");
+}
+
+function goOutside() {
+  if (lost) {
+    say("Bé đã chạy đi mất rồi! Hãy tìm bé nhé!");
+    return;
+  }
+  outside = true;
+  lost = true;
+  document.getElementById("outside").textContent =
+    catName + " chạy ra sân rồi! Hãy đón bé vào nhà nhé!";
+  say("Ối! " + catName + " chạy ra ngoài mất rồi! 🐾");
+}
+
+function bringInside() {
+  if (!lost) {
+    say(catName + " đang ở trong nhà rồi nè!");
+    return;
+  }
+  outside = false;
+  lost = false;
+  document.getElementById("outside").textContent =
+    "Bé đã về nhà an toàn! 🏠";
+  happy = Math.min(100, happy + 5);
+  say("Bắt được bé rồi! Về nhà thôi nào! 💗");
+}
+
+update();
+</script>
+</body>
+</html>
