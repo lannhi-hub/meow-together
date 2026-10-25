@@ -159,6 +159,11 @@ input {
 <body>
 <button onclick="resetGame()" style="position: fixed; top: 10px; right: 10px; background: #ff6f61; color: white; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; z-index: 999; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
   🔄 Chơi lại từ đầu
+  <!-- Đặt 2 nút đồng bộ đám mây ở đây -->
+<div style="margin-top: 15px; text-align: center; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+  <button onclick="saveToCloud()" style="background: #81c784; font-size: 12px; padding: 6px 12px; border: none; border-radius: 8px; cursor: pointer; color: white;">☁️ Lưu lên đám mây</button>
+  <button onclick="loadFromCloud()" style="background: #ffb74d; font-size: 12px; padding: 6px 12px; border: none; border-radius: 8px; cursor: pointer; color: white;">📥 Tải về thiết bị này</button>
+</div>
 </button>
 <header>
   <h1>🐾 Meow Together ♡</h1>
@@ -1039,6 +1044,57 @@ async function deleteLetter(id) {
 
 update();
 startCatwalk();
+
+const JSONBIN_ID = "6addbf1bac6210605a503595";
+const JSONBIN_API_KEY = "$2a$10$k4esKbEg5go5ndfH5/4gy./H3vg.UsLknYDnxnbXef/Mw1LaFhGyy";
+
+function saveToCloud() {
+    let gameData = {
+        catName: localStorage.getItem("meowCatName") || "Bé Mèo",
+        coins: typeof coins !== 'undefined' ? coins : 0,
+        happy: typeof happy !== 'undefined' ? happy : 50,
+        full: typeof full !== 'undefined' ? full : 50,
+        accessory: localStorage.getItem("meowAccessory") || "",
+        startDate: localStorage.getItem("meowStartDate") || new Date().toISOString()
+    };
+
+    fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': JSONBIN_API_KEY
+        },
+        body: JSON.stringify(gameData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Đã đồng bộ lên đám mây thành công! ☁️", data);
+        alert("Đã lưu tiến trình lên đám mây thành công! ☁️");
+    })
+    .catch(error => console.error("Lỗi đồng bộ:", error));
+}
+
+function loadFromCloud() {
+    fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
+        method: 'GET',
+        headers: {
+            'X-Master-Key': JSONBIN_API_KEY
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        let cloudData = data.record;
+        
+        localStorage.setItem("meowCatName", cloudData.catName);
+        localStorage.setItem("meowCoins", cloudData.coins);
+        localStorage.setItem("meowAccessory", cloudData.accessory);
+        
+        alert("Đã tải dữ liệu từ đám mây xuống thành công! 📥");
+        location.reload();
+    })
+    .catch(error => console.error("Không thể tải dữ liệu đám mây:", error));
+}
+
 </script>
 </body>
 </html>
