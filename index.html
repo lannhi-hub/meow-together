@@ -1,10 +1,42 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Meow Together ♡</title>
 <style>
+
+#cat {
+    position: relative;
+    display: inline-block;
+}
+#catAccessoryOverlay {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    z-index: 10;
+}
+
+  #yardMessage {
+  margin-top: 12px;
+  padding: 12px;
+  background: #e8f5dc;
+  border-radius: 14px;
+  text-align: center;
+}
+
+#catchCatBtn {
+  margin-top: 10px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 14px;
+  background: #ffd6e7;
+  cursor: pointer;
+  font-size: 15px;
+}
+
 * { box-sizing: border-box; }
 body {
   margin: 0;
@@ -36,14 +68,60 @@ main { max-width: 540px; margin: auto; padding: 12px; }
   position: relative;
   overflow: hidden;
 }
-.cat {
+ .cat {
   font-size: 92px;
   cursor: pointer;
+  display: inline-block;
+  transform-origin: center bottom;
   animation: bounce 2s infinite ease-in-out;
+  transition: transform 0.25s;
+  position: relative;
+  transition: margin-left 1.2s ease;
 }
+
+.cat.happy {
+  animation: happyDance 0.55s infinite alternate;
+}
+
+.cat.grumpy {
+  animation: grumpyShake 0.18s 4;
+}
+
+.cat.sleepy {
+  animation: sleepyMove 2.5s infinite ease-in-out;
+}
+
 @keyframes bounce {
-  0%,100% { transform: translateY(0); }
+  0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
+}
+
+@keyframes happyDance {
+  from { transform: translateY(0) rotate(-8deg) scale(1); }
+  to { transform: translateY(-12px) rotate(8deg) scale(1.08); }
+}
+
+@keyframes grumpyShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px) rotate(-5deg); }
+  75% { transform: translateX(5px) rotate(5deg); }
+}
+
+@keyframes sleepyMove {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(3px) scale(0.97); }
+}
+
+.cat.kitten {
+  font-size: 76px;
+}
+
+.cat.growing {
+  font-size: 96px;
+}
+
+.cat.adult {
+  font-size: 116px;
 }
 button, input {
   border: 0;
@@ -75,29 +153,44 @@ input {
 }
 .small { font-size: 13px; color: #98796e; }
 #message { min-height: 44px; font-weight: bold; }
+
 </style>
 </head>
 <body>
+<button onclick="resetGame()" style="position: fixed; top: 10px; right: 10px; background: #ff6f61; color: white; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; z-index: 999; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+  🔄 Chơi lại từ đầu
+</button>
 <header>
   <h1>🐾 Meow Together ♡</h1>
-  <p>Một bé mèo nhỏ, hai người cùng yêu.</p>
+  <p>Chăm sóc mèo béo màu cam.</p>
 </header>
 
 <main>
   <section class="card" id="welcome">
-    <h2>Hộp quà dành cho anh 💌</h2>
-    <p>Hôm nay là ngày đặc biệt của chúng mình...</p>
-    <p>Em có một món quà nhỏ dành cho anh!</p>
+    <h2>Hộp quà dành cho Quân 💌</h2>
+    <p>Hôm nay là ngày đặc biệt của chúng mình nhỉ...</p>
+    <p>Nhi có một món quà nhỏ dành cho Quân!</p>
     <button onclick="openGift()">Mở hộp quà 🎁</button>
   </section>
 
   <section class="card" id="game" hidden>
     <h2 id="catName">Mèo con</h2>
     <div class="room">
-      <div id="cat" class="cat" onclick="petCat()">🐱</div>
+     <div id="cat" class="cat" onclick="petCat()" style="position: relative; display: inline-block; cursor: pointer;">
+      <span id="catAccessoryOverlay" style="position: absolute; top: -15px; right: 5px; font-size: 24px; display: none;"></span>
+  🐱
+</div>
       <p id="stage">Bé mèo mới về nhà</p>
     </div>
-    <p id="message">Meo meo! Chào hai sen nha!</p>
+    <div id="yardMessage">🌷 Khu vườn nhỏ của bé mèo</div>
+    <button id="catchCatBtn" onclick="bringInside()" hidden>
+  🐾 Bắt mèo về nhà
+</button>
+
+<button id="catchCatBtn" onclick="bringCatHome()" hidden>
+  🐾 Bắt bé về nhà
+</button>
+    <p id="message">Meo! Chào chàng gái cô trai nha!</p>
 
     <div class="stats">
       <div class="stat">💗 Hạnh phúc<br><b id="happy">70</b>/100</div>
@@ -107,17 +200,124 @@ input {
     </div>
 
     <div class="card">
-      <h3>🍽️ Cho mèo ăn</h3>
-      <button onclick="feed('fish')">🐟 Cá</button>
-      <button onclick="feed('milk')">🥛 Sữa</button>
-      <button onclick="feed('cake')">🍰 Bánh ngọt</button>
+  <h3>🍽️ Cho mèo ăn</h3>
+  <button onclick="feed('fish')">🐟 Cá (<span id="countFish">2</span>)</button>
+  <button onclick="feed('milk')">🥛 Sữa (<span id="countMilk">2</span>)</button>
+  <button onclick="feed('cake')">🍰 Bánh ngọt (<span id="countCake">1</span>)</button>
+</div>
+
+    <!-- Cửa hàng mua đồ ăn -->
+<div class="card">
+  <h3>🏪 Cửa hàng thức ăn</h3>
+  <p>Số xu hiện có: <b id="shopCoins">10</b> 🪙</p>
+  
+  <button onclick="buyFood('fish', 5)">🐟 Mua Cá (5 xu)</button>
+  <button onclick="buyFood('milk', 3)">🥛 Mua Sữa (3 xu)</button>
+  <button onclick="buyFood('cake', 8)">🍰 Mua Bánh ngọt (8 xu)</button>
+
+  <!-- Cửa hàng phụ kiện cho mèo -->
+<div class="card" style="margin-top: 15px; background: #fff3e0; border: 2px solid #ffe0b2; border-radius: 12px; padding: 15px; text-align: center;">
+  <h3>🎀 Cửa Hàng Phụ Kiện Mèo</h3>
+  <p class="small">Dùng xu để mua trang phục diện cho bé mèo nhé!</p>
+  
+  <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 10px;">
+    <!-- Món 1: Mũ tai thỏ -->
+    <div style="background: white; padding: 10px; border-radius: 8px; border: 1px solid #ffd54f; width: 30%;">
+      <div style="font-size: 28px;">🐰</div>
+      <div style="font-size: 13px; font-weight: bold;">Mũ Thỏ</div>
+      <div style="font-size: 11px; color: #f57c00;">10 🪙</div>
+      <button onclick="buyAccessory('rabbitHat', 10, '🐰')" style="background: #ffa726; font-size: 11px; padding: 4px 8px; margin-top: 5px;">Mua & Đeo</button>
     </div>
+
+    <!-- Món 2: Kính râm -->
+    <div style="background: white; padding: 10px; border-radius: 8px; border: 1px solid #ffd54f; width: 30%;">
+      <div style="font-size: 28px;">🕶️</div>
+      <div style="font-size: 13px; font-weight: bold;">Kính Râm</div>
+      <div style="font-size: 11px; color: #f57c00;">15 🪙</div>
+      <button onclick="buyAccessory('sunglasses', 15, '🕶️')" style="background: #ffa726; font-size: 11px; padding: 4px 8px; margin-top: 5px;">Mua & Đeo</button>
+    </div>
+
+    <!-- Món 3: Khăn choàng -->
+    <div style="background: white; padding: 10px; border-radius: 8px; border: 1px solid #ffd54f; width: 30%;">
+      <div style="font-size: 28px;">🧣</div>
+      <div style="font-size: 13px; font-weight: bold;">Khăn Len</div>
+      <div style="font-size: 11px; color: #f57c00;">20 🪙</div>
+      <button onclick="buyAccessory('scarf', 20, '🧣')" style="background: #ffa726; font-size: 11px; padding: 4px 8px; margin-top: 5px;">Mua & Đeo</button>
+    </div>
+  </div>
+
+  <div id="shopMessage" class="small" style="margin-top: 10px; color: #e65100; font-weight: bold;"></div>
+  
+  <!-- Khu vực hiển thị phụ kiện đang đeo lên mèo -->
+  <div style="margin-top: 10px; font-size: 14px;">
+    Phụ kiện đang đeo: <span id="equippedAccessory" style="font-size: 20px;">Chưa có</span>
+  </div>
+</div>
+  
+<!-- Bảng Trò chơi Kiếm Xu -->
+<div class="card">
+  <h3>🎮 Trò chơi kiếm xu</h3>
+  <button onclick="showGame('mouse')">🐭 Đuổi bắt chuột</button>
+  <button onclick="showGame('memory')">🃏 Lật hình trí nhớ</button>
+
+  <!-- Minigame 1: Bắt chuột -->
+  <div id="mouseGame" hidden style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+    <h4>🐭 Nhấp nhanh vào con chuột!</h4>
+    <p>Thời gian: <b id="mouseTimer">10</b>s | Điểm: <b id="mouseScore">0</b></p>
+    <div id="mouseArea" style="width: 100%; height: 180px; background: #fff3e0; position: relative; overflow: hidden; border-radius: 12px; cursor: pointer;">
+      <span id="mouse" onclick="catchMouse()" style="font-size: 35px; position: absolute; display: none; user-select: none;">🐭</span>
+    </div>
+    <br>
+    <button onclick="startMouseGame()">▶️ Bắt đầu chơi</button>
+  </div>
+
+  <!-- Minigame 2: Lật hình -->
+  <div id="memoryGame" hidden style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+    <h4>🃏 Lật hình tìm cặp đôi!</h4>
+    <p id="memoryStatus">Chọn 2 hình giống nhau để nhận thưởng!</p>
+    <div id="memoryBoard" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 260px; margin: 10px auto;"></div>
+    <button onclick="startMemoryGame()">🔄 Chơi mới</button>
+  </div>
+</div>
+
+  <p id="shopMessage" class="small"></p>
+</div>
 
     <div class="card">
       <h3>💕 Chơi cùng bé</h3>
       <button onclick="petCat()">Vuốt ve 🥰</button>
       <button onclick="play()">Chơi đồ chơi 🧶</button>
       <button onclick="sleepCat()">Ngủ ngon 💤</button>
+      <!-- Nút gọi bồn tắm -->
+<button onclick="openBath()" style="background: #4fc3f7;">Đi tắm 🛁</button>
+
+<!-- Khu vực bồn tắm (mặc định ẩn) -->
+<div id="bathArea" hidden style="margin-top: 15px; background: #e1f5fe; border: 2px dashed #81d4fa; border-radius: 12px; padding: 12px; text-align: center;">
+  <h4>🛁 Góc Tắm Rửa Cho Bé Mèo</h4>
+  <p class="small">Hãy kéo hoặc nhấp vào bé mèo để đưa vào bồn tắm nhé!</p>
+  
+  <div style="display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 10px;">
+    <!-- Bé mèo bên ngoài -->
+    <div id="catOutside" onclick="putCatInBath()" style="cursor: pointer; font-size: 40px;" title="Bấm để đưa vào bồn">
+      🐱 <br><span style="font-size: 11px;">(Bé mèo)</span>
+    </div>
+    
+    <div style="font-size: 24px;">➡️</div>
+
+    <!-- Bồn tắm -->
+    <div id="bathtub" style="width: 100px; height: 80px; background: #b3e5fc; border: 3px solid #03a9f4; border-radius: 0 0 20px 20px; display: flex; align-items: center; justify-content: center; font-size: 35px; position: relative;">
+      🛁
+      <span id="catInTub" style="position: absolute; display: none;">🐱✨</span>
+    </div>
+  </div>
+  
+  <div id="bathMessage" style="margin-top: 10px; font-weight: bold; color: #0288d1;"></div>
+  <button onclick="closeBath()" style="margin-top: 10px; background: #90a4ae; font-size: 12px; padding: 6px 12px;">Đóng bồn tắm</button>
+</div>
+      <button onclick="checkIn()">📅 Điểm danh hôm nay</button>
+<p id="checkinMessage">Hãy điểm danh để chăm bé mèo nhé!</p>
+<p>Ngày nuôi: <span id="ageDays">1</span></p>
+<p>Món bé thích: <span id="favoriteFoodName"></span></p>
     </div>
 
     <div class="card">
@@ -128,38 +328,207 @@ input {
     </div>
 
     <p class="small">
-      Phiên bản thử nghiệm: dữ liệu được lưu trên trình duyệt này.
-      Chưa có tài khoản hoặc đồng bộ online.
     </p>
+  </section>
+
+<section class="card" id="mailbox">
+    <h2>💌 Hộp thư của chúng mình</h2>
+    <p>Nhắc nhau phải chăm mèo đấy nhé.</p>
+
+    <label for="letterSender">Người gửi:</label><br>
+    <select id="letterSender">
+      <option value="Bà">Nhi dyeu</option>
+      <option value="Quân">Quân ở bẩn</option>
+    </select>
+
+    <br><br>
+
+    <textarea
+      id="letterMessage"
+      placeholder="Viết nội dung thư của bạn..."
+      maxlength="2000"
+      rows="5"
+      style="width:90%; max-width:400px; padding:12px;
+      border:1px solid #e5c8b7; border-radius:13px;
+      font:15px Arial; resize:vertical;"
+    ></textarea>
+
+    <br>
+    <button onclick="sendLetter()">Gửi thư 💌</button>
+    <button onclick="loadLetters()">Đọc thư mới nhất 📬</button>
+
+    <p id="mailboxStatus" role="status">Chưa tải thư.</p>
+    <div id="letterList"></div>
   </section>
 </main>
 
+</main>
+
 <script>
-let happy = 70;
-let full = 60;
-let exp = 0;
-let coins = 10;
+function resetGame() {
+    let confirmReset = confirm("Bạn có chắc muốn xóa toàn bộ tiến trình để chơi lại từ đầu không? 🥺");
+    
+    if (confirmReset) {
+        localStorage.removeItem("meowCatName");
+        localStorage.removeItem("meowCoins");
+        localStorage.removeItem("meowHappy");
+        localStorage.removeItem("meowFull");
+        localStorage.removeItem("meowExp");
+        localStorage.removeItem("meowMood");
+        localStorage.removeItem("meowInventory");
+        localStorage.removeItem("meowSharedLetter");
+        
+        localStorage.removeItem("meowStartDate");
+        localStorage.removeItem("startDate");
+        localStorage.removeItem("lastCheckIn");
+        localStorage.removeItem("checkInCount");
+        
+        localStorage.clear();
+
+        location.reload();
+    }
+}
+let catName = localStorage.getItem("meowCatName") || "Mèo con";
+
+window.addEventListener('DOMContentLoaded', (event) => {
+    if (localStorage.getItem("meowCatName")) {
+        const welcomeSec = document.getElementById("welcome");
+        const gameSec = document.getElementById("game");
+        if (welcomeSec) welcomeSec.style.display = "none";
+        if (gameSec) gameSec.style.display = "block";
+        
+        const catNameEl = document.getElementById("catName");
+        if (catNameEl) catNameEl.textContent = catName;
+       if (typeof updateEquippedAccessoryDisplay === "function") {
+        updateEquippedAccessoryDisplay();
+    }
+  }
+});
+
+let happy = Number(localStorage.getItem("meowHappy")) || 70;
+let full = Number(localStorage.getItem("meowFull")) || 60;
+let exp = Number(localStorage.getItem("meowExp")) || 0;
+let coins = Number(localStorage.getItem("meowCoins")) || 10;
+let mood = localStorage.getItem("meowMood") || "normal";
+
+let inventory = JSON.parse(localStorage.getItem("meowInventory")) || {
+    fish: 2,
+    milk: 2,
+    cake: 1
+};
+
+function buyFood(foodType, price) {
+    if (coins < price) {
+        document.getElementById("shopMessage").textContent = "❌ Bạn không đủ xu để mua item này!";
+        return;
+    }
+    
+    coins -= price;
+    inventory[foodType] = (inventory[foodType] || 0) + 1;
+    
+    document.getElementById("shopMessage").textContent = "🎉 Mua thành công! Đã thêm vào túi đồ.";
+    update(); 
+    saveGameData();
+}
+let ageDays = Number(localStorage.getItem("meowAgeDays") || "1");
+let lastCheckIn = localStorage.getItem("meowLastCheckIn") || "";
+
+const foodOptions = ["fish", "milk", "cake"];
+
+let favoriteFood =
+  localStorage.getItem("meowFavoriteFood") ||
+  foodOptions[Math.floor(Math.random() * foodOptions.length)];
+
+localStorage.setItem("meowFavoriteFood", favoriteFood);
 let outside = false;
 let lost = false;
-let catName = "Mèo con";
+
+function saveGameData() {
+    localStorage.setItem("meowCoins", coins);
+    localStorage.setItem("meowHappy", happy);
+    localStorage.setItem("meowFull", full);
+    localStorage.setItem("meowExp", exp);
+    localStorage.setItem("meowMood", mood);
+    localStorage.setItem("meowInventory", JSON.stringify(inventory));
+}
+
+function loadGameData() {
+    if (localStorage.getItem("meowCoins") !== null) {
+        coins = Number(localStorage.getItem("meowCoins"));
+        happy = Number(localStorage.getItem("meowHappy"));
+        full = Number(localStorage.getItem("meowFull"));
+        exp = Number(localStorage.getItem("meowExp"));
+        mood = localStorage.getItem("meowMood");
+    }
+    
+    let savedInventory = localStorage.getItem("meowInventory");
+    if (savedInventory) {
+        try {
+            inventory = JSON.parse(savedInventory);
+        } catch (e) {
+        }
+    }
+}
 
 function openGift() {
-  let letter =
-    "Helo anh đẹp trai, chưa gì đã anni 3 tháng của 2 đứa mình rồi. " +
-    "Những lời em muốn nói thì đều viết hết qua thư tay rồi, " +
-    "sẵn đây em mới mua về 1 bé mèo thúi, nhờ anh cùng em chăm sóc " +
-    "nó thành một con mèo siêu cấp béo nhâ, yêu anh.";
+    let letter = 
+        "Helo anh đẹp trai, chưa gì đã anni 3 tháng của 2 đứa mình rồi. " +
+        "Những lời em muốn nói thì đều viết hết qua thư tay rồi, " +
+        "sẵn đây em mới mua về 1 bé mèo tới, nhớ anh cùng em chăm sóc " +
+        "nó thành một bé mèo siêu cấp béo nhà, yêu anh.";
+    
+    alert(letter);
+    
+    if (!localStorage.getItem("meowCatName")) {
+        catName = prompt("Đặt tên cho bé mèo của chúng mình nha 💖") || "Mèo con";
+        localStorage.setItem("meowCatName", catName);
+    } else {
+        catName = localStorage.getItem("meowCatName");
+    }
 
-  alert(letter);
-  catName = prompt("Đặt tên cho bé mèo của chúng mình nha 💗") || "Mèo con";
-  document.getElementById("catName").textContent = catName;
-  document.getElementById("welcome").hidden = true;
-  document.getElementById("game").hidden = false;
-  say("Meo meo! " + catName + " đã về nhà với hai sen!");
+    document.getElementById("catName").textContent = catName;
+    document.getElementById("welcome").style.display = "none";
+    document.getElementById("game").style.display = "block";
+    say("Meo meo! " + catName + " đã về nhà với quân và nhỉ!");
 }
 
 function say(message) {
   document.getElementById("message").textContent = message;
+  update();
+}
+
+function getTodayKey() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function checkIn() {
+  const today = getTodayKey();
+
+  if (lastCheckIn === today) {
+    document.getElementById("checkinMessage").textContent =
+      "Đã điểm danh hôm nay 💗 Mai quay lại nha!";
+    return;
+  }
+
+  if (lastCheckIn !== "") {
+    ageDays = Math.min(8, ageDays + 1);
+  }
+
+  lastCheckIn = today;
+
+  localStorage.setItem("meowAgeDays", ageDays);
+  localStorage.setItem("meowLastCheckIn", lastCheckIn);
+
+  coins += 5;
+  exp = Math.min(100, exp + 5);
+
+  document.getElementById("checkinMessage").textContent =
+    "Điểm danh thành công! Được nhận 5 xu và 5 EXP 🌷";
+
   update();
 }
 
@@ -169,43 +538,95 @@ function update() {
   document.getElementById("exp").textContent = exp;
   document.getElementById("coins").textContent = coins;
 
-  let cat = document.getElementById("cat");
-  let stage = document.getElementById("stage");
+  const cat = document.getElementById("cat");
+  const stage = document.getElementById("stage");
 
-  if (exp >= 100) {
-    cat.textContent = "😺";
-    stage.textContent = "Mèo trưởng thành";
-  } else if (exp >= 40) {
-    cat.textContent = "🐈";
-    stage.textContent = "Mèo con lớn hơn";
-  } else {
-    cat.textContent = "🐱";
-    stage.textContent = "Bé mèo mới về nhà";
+  let face = "🐱";
+
+  if (mood === "happy") {
+    face = "😻";
+  } else if (mood === "grumpy") {
+    face = "😾";
+  } else if (mood === "sleepy") {
+    face = "😴";
   }
+
+  cat.classList.remove("kitten", "growing", "adult");
+
+if (ageDays >= 8) {
+  stage.textContent = "Mèo trưởng thành ✨";
+  cat.classList.add("adult");
+} else if (ageDays >= 4) {
+  stage.textContent = "Mèo con lớn hơn 🌷";
+  cat.classList.add("growing");
+} else {
+  stage.textContent = "Mèo sơ sinh 💗";
+  cat.classList.add("kitten");
 }
 
+document.getElementById("ageDays").textContent = ageDays;
+
+const foodNames = {
+  fish: "Cá 🐟",
+  milk: "Sữa 🥛",
+  cake: "Bánh 🍰"
+};
+
+document.getElementById("favoriteFoodName").textContent =
+  foodNames[favoriteFood] || "Chưa có";
+
+  cat.textContent = face;
+
+  cat.classList.remove("happy", "grumpy", "sleepy");
+
+  if (mood === "happy") {
+    cat.classList.add("happy");
+  } else if (mood === "grumpy") {
+    cat.classList.add("grumpy");
+  } else if (mood === "sleepy") {
+    cat.classList.add("sleepy");
+  }
+  if (document.getElementById("shopCoins")) {
+    document.getElementById("shopCoins").textContent = coins;
+}
+ if (document.getElementById("countFish")) {
+        document.getElementById("countFish").textContent = inventory.fish || 0;
+        document.getElementById("countMilk").textContent = inventory.milk || 0;
+        document.getElementById("countCake").textContent = inventory.cake || 0;
+    }
+}
 function feed(food) {
   if (lost) {
     say("Phải tìm và đón " + catName + " về nhà trước đã!");
     return;
   }
+  if (!inventory[food] || inventory[food] <= 0) {
+        say("Hết " + foodNames[food] + " rồi! Hãy vào Cửa hàng để mua thêm nhé 🛒");
+        return;
+    }
+inventory[food]--;
   if (food === "fish") {
+    mood = "happy" ;
     full = Math.min(100, full + 25);
     happy = Math.min(100, happy + 12);
     exp += 10;
     coins += 2;
-    say("Meo meo! Cá ngon quá, cho tôi ăn thêm! 🐟");
+    say("Tôi muốn ăn thêm cơ!!! 🐟");
   } else if (food === "milk") {
+    mood = "happy";
     full = Math.min(100, full + 10);
     happy = Math.min(100, happy + 3);
     exp += 4;
-    say("Măm măm! Cảm ơn sen nha 🥛");
+    say("Cảm ơn nha đồ đáng ghét! 🥛");
   } else {
+    mood = "grumpy" ;
     happy = Math.max(0, happy - 8);
     say("Dở như này thì tự ăn đi ông nội! 😾");
   }
   full = Math.min(100, full);
   exp = Math.min(100, exp);
+  update();
+  saveGameData();
 }
 
 function petCat() {
@@ -213,6 +634,7 @@ function petCat() {
     say("Bé đang ở ngoài sân, mau đón về nào!");
     return;
   }
+  mood = "happy" ;
   happy = Math.min(100, happy + 8);
   exp = Math.min(100, exp + 5);
   coins += 1;
@@ -224,6 +646,7 @@ function play() {
     say("Hãy đón bé về trước khi chơi nhé!");
     return;
   }
+  mood = "happy" ;
   happy = Math.min(100, happy + 12);
   full = Math.max(0, full - 5);
   exp = Math.min(100, exp + 8);
@@ -236,22 +659,112 @@ function sleepCat() {
     say("Bé chưa về nhà nên chưa ngủ được!");
     return;
   }
+  mood = "sleepy" ;
   full = Math.max(0, full - 3);
   happy = Math.min(100, happy + 5);
   say("Chúc " + catName + " ngủ ngon nhé! 💤");
 }
 
+// Mở khu vực bồn tắm
+function openBath() {
+    let bathArea = document.getElementById("bathArea");
+    let catOutside = document.getElementById("catOutside");
+    let catInTub = document.getElementById("catInTub");
+    let bathMsg = document.getElementById("bathMessage");
+
+    if (bathArea) bathArea.hidden = false;
+    if (catOutside) catOutside.style.display = "inline-block";
+    if (catInTub) catInTub.style.display = "none";
+    if (bathMsg) bathMsg.textContent = "";
+}
+
+function closeBath() {
+    let bathArea = document.getElementById("bathArea");
+    if (bathArea) bathArea.hidden = true;
+}
+
+function putCatInBath() {
+    let catOutside = document.getElementById("catOutside");
+    let catInTub = document.getElementById("catInTub");
+    let bathMsg = document.getElementById("bathMessage");
+
+    if (catOutside) catOutside.style.display = "none";
+    if (catInTub) catInTub.style.display = "block";
+    
+    happy = Math.min(100, happy + 15);
+    coins += 5; 
+    
+    update();
+    if (typeof saveGameData === "function") {
+        saveGameData(); 
+    }
+    
+    if (bathMsg) {
+        bathMsg.textContent = "✨ May ghê sạch hơn Quân rồi, tặng 5 xu này. 🪙!";
+    }
+    
+    setTimeout(() => {
+        closeBath();
+    }, 60000);
+}
+
+let currentAccessory = localStorage.getItem("meowAccessory") || "";
+
+function buyAccessory(itemKey, price, icon) {
+    if (coins >= price) {
+        coins -= price;
+        currentAccessory = icon;
+        localStorage.setItem("meowAccessory", currentAccessory);
+        
+        updateEquippedAccessoryDisplay();
+        update(); 
+
+        let shopMsg = document.getElementById("shopMessage");
+        if (shopMsg) {
+            shopMsg.textContent = `🎉 Bạn đã mua thành công và mặc cho bé mèo!`;
+        }
+    } else {
+        let shopMsg = document.getElementById("shopMessage");
+        if (shopMsg) {
+            shopMsg.textContent = `❌ Không đủ xu rồi! Hãy chơi minigames hoặc tắm cho bé nhé!`;
+        }
+    }
+}
+
+function updateEquippedAccessoryDisplay() {
+    let savedAccessory = localStorage.getItem("meowAccessory") || "";
+    currentAccessory = savedAccessory;
+
+    let displayEl = document.getElementById("equippedAccessory");
+    if (displayEl) {
+        displayEl.textContent = currentAccessory ? currentAccessory : "Chưa có";
+    }
+
+    let catEl = document.getElementById("cat");
+    if (catEl) {
+        catEl.innerHTML = (currentAccessory ? currentAccessory + " " : "") + "🐱";
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    updateEquippedAccessoryDisplay();
+});
+
 function goOutside() {
-  if (lost) {
-    say("Bé đã chạy đi mất rồi! Hãy tìm bé nhé!");
+  if (outside) {
+    say("Bé đang ở ngoài sân rồi nè! 🐾");
     return;
   }
+}
+
   outside = true;
   lost = true;
+
   document.getElementById("outside").textContent =
-    catName + " chạy ra sân rồi! Hãy đón bé vào nhà nhé!";
-  say("Ối! " + catName + " chạy ra ngoài mất rồi! 🐾");
-}
+    catName + " đang vui vẻ đi dạo ngoài sân 🌷";
+
+  say("Meo meo! " + catName + " chạy ra sân chơi rồi! 🐈");
+  update();
 
 function bringInside() {
   if (!lost) {
@@ -260,13 +773,272 @@ function bringInside() {
   }
   outside = false;
   lost = false;
+ document.getElementById("catchCatBtn").hidden = true;
+document.getElementById("yardMessage").textContent =
+  "Bé mèo đã về nhà an toàn 💗";
+document.getElementById("cat").style.marginLeft = "0px";
   document.getElementById("outside").textContent =
     "Bé đã về nhà an toàn! 🏠";
   happy = Math.min(100, happy + 5);
   say("Bắt được bé rồi! Về nhà thôi nào! 💗");
 }
 
+let walkTimer = null;
+
+function catwalk() {
+    if (outside || lost) return;
+    
+    if (Math.random() < 0.25) {
+        goOutside();
+        document.getElementById("catchCatBtn").hidden = false;
+        document.getElementById("yardMessage").textContent = 
+            catName + " đang đi dạo ngoài sân! Mau gọi bé về nhà 🌷";
+    }
+}
+
+function startCatwalk() {
+    if (walkTimer !== null) return;
+    
+    walkTimer = setInterval(catwalk, 10 * 60 * 1000);
+}
+
+function showGame(gameType) {
+  document.getElementById("mouseGame").hidden = (gameType !== "mouse");
+  document.getElementById("memoryGame").hidden = (gameType !== "memory");
+  if (gameType === "memory") startMemoryGame();
+}
+
+let mouseTimeLeft = 10;
+let mouseInterval = null;
+
+function startMouseGame() {
+  mouseScore = 0;
+  mouseTimeLeft = 10;
+  document.getElementById("mouseScore").textContent = mouseScore;
+  document.getElementById("mouseTimer").textContent = mouseTimeLeft;
+  
+  const mouse = document.getElementById("mouse");
+  mouse.style.display = "block";
+  moveMouse();
+
+  clearInterval(mouseInterval);
+  mouseInterval = setInterval(() => {
+    mouseTimeLeft--;
+    document.getElementById("mouseTimer").textContent = mouseTimeLeft;
+    
+    if (mouseTimeLeft <= 0) {
+      clearInterval(mouseInterval);
+      mouse.style.display = "none";
+      let reward = mouseScore * 1; 
+      coins += reward;
+      update();
+      saveGameData();
+      alert(`🎉 Hết giờ! Bạn bắt được ${mouseScore} con chuột và nhận được ${reward} xu 🪙!`);
+    } else {
+      moveMouse();
+    }
+  }, 1000);
+}
+
+function moveMouse() {
+  const area = document.getElementById("mouseArea");
+  const mouse = document.getElementById("mouse");
+  const maxX = area.clientWidth - 40;
+  const maxY = area.clientHeight - 40;
+  
+  const randomX = Math.floor(Math.random() * maxX);
+  const randomY = Math.floor(Math.random() * maxY);
+  
+  mouse.style.left = randomX + "px";
+  mouse.style.top = randomY + "px";
+}
+
+function catchMouse() {
+  mouseScore++;
+  document.getElementById("mouseScore").textContent = mouseScore;
+  moveMouse();
+}
+
+const cardsData = ['🐟', '🐟', '🥛', '🥛', '🍰', '🍰', '🎾', '🎾', '🐱', '🐱', '💖', '💖', '⭐', '⭐', '🍎', '🍎', '🌸', '🌸', '🎁', '🎁'];
+let flippedCards = [];
+let matchedPairs = 0;
+
+function startMemoryGame() {
+  const board = document.getElementById("memoryBoard");
+  
+  board.style.gridTemplateColumns = "repeat(4, 1fr)";
+  board.innerHTML = "";
+  flippedCards = [];
+  matchedPairs = 0;
+  document.getElementById("memoryStatus").textContent = "Chọn 2 hình giống nhau (10 cặp)!";
+
+  let shuffled = [...cardsData].sort(() => Math.random() - 0.5);
+
+  shuffled.forEach((emoji, index) => {
+    let card = document.createElement("div");
+    card.style.cssText = "height: 48px; background: #ffb74d; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px; cursor: pointer; user-select: none;";
+    card.dataset.emoji = emoji;
+    card.dataset.index = index;
+    card.textContent = "❓";
+    card.onclick = () => flipCard(card);
+    board.appendChild(card);
+  });
+}
+
+function flipCard(card) {
+  if (flippedCards.length >= 2 || card.textContent !== "❓") return;
+
+  card.textContent = card.dataset.emoji;
+  card.style.background = "#fff3e0";
+  flippedCards.push(card);
+
+  if (flippedCards.length === 2) {
+    let [card1, card2] = flippedCards;
+
+    if (card1.dataset.emoji === card2.dataset.emoji) {
+      matchedPairs++;
+      flippedCards = [];
+      if (matchedPairs === cardsData.length / 2) {
+        let reward = 10; 
+        coins += reward;
+        update();
+        document.getElementById("memoryStatus").textContent = `🎉 Siêu trí nhớ! Bạn thắng và nhận ${reward} xu 🪙!`;
+      }
+    } else {
+      setTimeout(() => {
+        card1.textContent = "❓";
+        card1.style.background = "#ffb74d";
+        card2.textContent = "❓";
+        card2.style.background = "#ffb74d";
+        flippedCards = [];
+      }, 700);
+    }
+  }
+}
+
+const MAILBOX_URL = "https://josrsvmrxamoiwcgsdwu.supabase.co/functions/v1/meow-mailbox";
+const MAILBOX_CODE = "25072026";
+
+async function mailboxRequest(payload) {
+  const response = await fetch(MAILBOX_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      ...payload,
+      code: MAILBOX_CODE
+    })
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.error || "Không thể kết nối hộp thư.");
+  }
+
+  return result;
+}
+
+async function sendLetter() {
+  const sender = document.getElementById("letterSender").value;
+  const message = document.getElementById("letterMessage").value.trim();
+  const status = document.getElementById("mailboxStatus");
+
+  if (!message) {
+    status.textContent = "Viết vài dòng rồi hãy gửi nhé 💗";
+    return;
+  }
+
+  status.textContent = "Đang gửi thư...";
+
+  try {
+    await mailboxRequest({
+      action: "send",
+      sender,
+      message
+    });
+
+    document.getElementById("letterMessage").value = "";
+    status.textContent = "Gửi thư thành công rồi! 💌";
+    await loadLetters();
+  } catch (error) {
+    status.textContent = "Chưa gửi được: " + error.message;
+  }
+}
+
+async function loadLetters() {
+  const status = document.getElementById("mailboxStatus");
+  const list = document.getElementById("letterList");
+
+  status.textContent = "Đang tải thư...";
+  list.replaceChildren();
+
+  try {
+    const result = await mailboxRequest({ action: "list" });
+
+    if (!result.letters || result.letters.length === 0) {
+      status.textContent = "Chưa có thư nào. Hãy viết lá thư đầu tiên nhé! 💗";
+      return;
+    }
+
+    result.letters.forEach((letter) => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const heading = document.createElement("h3");
+      heading.textContent = letter.sender === "Quân"
+        ? "Quân gửi thư"
+        : "Nhi gửi thư";
+
+      const content = document.createElement("p");
+      content.style.whiteSpace = "pre-wrap";
+      content.textContent = letter.message;
+
+      const date = document.createElement("p");
+      date.className = "small";
+      date.textContent = new Date(letter.created_at).toLocaleString("vi-VN");
+
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "🗑️ Xóa thư";
+      deleteButton.style.background = "#b96c6c";
+
+      deleteButton.onclick = () => deleteLetter(letter.id);
+
+      card.append(heading, content, date, deleteButton);
+      list.appendChild(card);
+    });
+
+    status.textContent = "Đã tải " + result.letters.length + " lá thư 💌";
+  } catch (error) {
+    status.textContent = "Chưa tải được thư: " + error.message;
+  }
+}
+async function deleteLetter(id) {
+  const confirmed = confirm(
+    "Bạn có chắc muốn xóa lá thư này không? Thao tác này không thể hoàn tác 💌"
+  );
+
+  if (!confirmed) return;
+
+  const status = document.getElementById("mailboxStatus");
+  status.textContent = "Đang xóa thư...";
+
+  try {
+    await mailboxRequest({
+      action: "delete",
+      id: id
+    });
+
+    status.textContent = "Đã xóa lá thư 🗑️";
+    await loadLetters();
+  } catch (error) {
+    status.textContent = "Chưa xóa được: " + error.message;
+  }
+}
+
 update();
+startCatwalk();
 </script>
 </body>
 </html>
